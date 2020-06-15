@@ -14,17 +14,23 @@ $TTL    604800
 services.okd.local.          IN      A       192.168.1.210
 
 ; OpenShift Container Platform Cluster - A records
+; Create entry for the bootstrap host
 bootstrap.lab.okd.local.        IN      A      192.168.1.200
+; Create entries for the master hosts
 master1.lab.okd.local.        IN      A      192.168.1.201
 master2.lab.okd.local.         IN      A      192.168.1.202
 master3.lab.okd.local.         IN      A      192.168.1.203
+; Create entries for the worker hosts
 worker1.lab.okd.local.        IN      A      192.168.1.204
 worker2.lab.okd.local.        IN      A      192.168.1.205
 
 ; OpenShift internal cluster IPs - A records
+; The api points to the IP of your load balancer
 api.lab.okd.local.    IN    A    192.168.1.210
 api-int.lab.okd.local.    IN    A    192.168.1.210
+; The wildcard also points to the load balancer
 *.apps.lab.okd.local.    IN    A    192.168.1.210
+; The ETCd cluster lives on the masters...so point these to the IP of the masters
 etcd-0.lab.okd.local.    IN    A     192.168.1.201
 etcd-1.lab.okd.local.    IN    A     192.168.1.202
 etcd-2.lab.okd.local.    IN    A    192.168.1.203
@@ -32,7 +38,8 @@ console-openshift-console.apps.lab.okd.local.     IN     A     192.168.1.210
 oauth-openshift.apps.lab.okd.local.     IN     A     192.168.1.210
 
 ; OpenShift internal cluster IPs - SRV records
-_etcd-server-ssl._tcp.lab.okd.local.    86400     IN    SRV     0    10    2380    etcd-0.lab
-_etcd-server-ssl._tcp.lab.okd.local.    86400     IN    SRV     0    10    2380    etcd-1.lab
-_etcd-server-ssl._tcp.lab.okd.local.    86400     IN    SRV     0    10    2380    etcd-2.lab
+; The SRV records are IMPORTANT....make sure you get these right...note the trailing dot at the end...
+_etcd-server-ssl._tcp.lab.okd.local.    86400     IN    SRV     0    10    2380    etcd-0.lab.okd.local.
+_etcd-server-ssl._tcp.lab.okd.local.    86400     IN    SRV     0    10    2380    etcd-1.lab.okd.local.
+_etcd-server-ssl._tcp.lab.okd.local.    86400     IN    SRV     0    10    2380    etcd-2.lab.okd.local.
 
