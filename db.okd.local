@@ -23,6 +23,8 @@ master3.lab.okd.local.         IN      A      192.168.1.203
 ; Create entries for the worker hosts
 worker1.lab.okd.local.        IN      A      192.168.1.204
 worker2.lab.okd.local.        IN      A      192.168.1.205
+worker3.lab.okd.local.        IN      A      192.168.1.206
+worker4.lab.okd.local.        IN      A      192.168.1.207
 
 ; OpenShift internal cluster IPs - A records
 ; The api points to the IP of your load balancer
