@@ -92,6 +92,7 @@ files:
   - { icon: "📊",  name: "configmap-cluster-monitoring-config.yaml", desc: "Prometheus / Alertmanager NFS 儲存" }
   - { icon: "🔐",  name: "htpasswd_provider.yaml", desc: "HTPasswd OAuth identity provider" }
   - { icon: "📤",  name: "nfs.config",             desc: "NFS exports（/var/nfsshare 192.168.1.0/24）" }
+  - { icon: "💻",  name: "initrd-cmd.txt",          desc: "節點開機參數（coreos.inst.*），PXE TAB 輸入用" }
 
 insights:
   - title: "時區一致性"

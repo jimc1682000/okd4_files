@@ -1,6 +1,6 @@
 <script setup>
 import { useData } from "vitepress";
-import { ref, onMounted, onUnmounted, nextTick } from "vue";
+import { ref, onMounted, onUnmounted, nextTick, watch } from "vue";
 
 const { frontmatter } = useData();
 
@@ -8,6 +8,42 @@ const theme = ref("dark");
 const scrolled = ref(false);
 let cleanup = [];
 let io = null;
+
+const archSvg = ref("");
+const ARCH_DEF = `flowchart TD
+    NET([Internet]) --> PF["pfSense<br/>WAN: home-network / LAN: 192.168.1.1"]
+    subgraph VLAN ["192.168.1.0/24 · OKD VLAN"]
+        SVC["services 192.168.1.210<br/>DNS · HAProxy · Apache · NFS"]
+        BOOT(["bootstrap 192.168.1.200<br/>Fedora CoreOS ← 安裝後移除"])
+        M1["master1 · .201"]
+        M2["master2 · .202"]
+        M3["master3 · .203"]
+        W1["worker1 · .204"]
+        W2["worker2 · .205"]
+    end
+    PF --> SVC & BOOT & M1 & M2 & M3 & W1 & W2
+    SVC -. "API 6443 / MCS 22623" .-> M1 & M2 & M3
+    SVC -. "Ingress 80 / 443" .-> W1 & W2`;
+let mermaidMod = null;
+let archCount = 0;
+async function renderArch() {
+  if (typeof window === "undefined") return;
+  if (!mermaidMod) {
+    const m = await import("mermaid");
+    mermaidMod = m.default;
+  }
+  mermaidMod.initialize({
+    startOnLoad: false,
+    theme: theme.value === "dark" ? "dark" : "default",
+  });
+  try {
+    archCount++;
+    const { svg } = await mermaidMod.render("arch-" + archCount, ARCH_DEF);
+    archSvg.value = svg;
+  } catch (e) {
+    console.error("mermaid:", e);
+  }
+}
 
 function applyTheme() {
   if (typeof document === "undefined") return;
@@ -37,6 +73,7 @@ onMounted(() => {
   theme.value = stored || document.documentElement.getAttribute("data-theme") || "dark";
   applyTheme();
   nextTick(reveal);
+  renderArch();
 
   const onScroll = () => { scrolled.value = window.scrollY > 8; };
   window.addEventListener("scroll", onScroll, { passive: true });
@@ -44,6 +81,7 @@ onMounted(() => {
   cleanup.push(() => window.removeEventListener("scroll", onScroll));
 });
 onUnmounted(() => { if (io) io.disconnect(); cleanup.forEach((fn) => fn()); cleanup = []; });
+watch(theme, renderArch);
 </script>
 
 <template>
@@ -83,22 +121,18 @@ onUnmounted(() => { if (io) io.disconnect(); cleanup.forEach((fn) => fn()); clea
       <!-- architecture -->
       <section class="section reveal">
         <div class="section-title"><span class="ico">🏗</span> 網路架構</div>
-        <div class="card">
-          <pre class="arch-block">Internet
+        <div class="card arch-wrap">
+          <div v-if="archSvg" class="arch-mermaid" v-html="archSvg"></div>
+          <pre v-else class="arch-block">Internet
     │
 [pfSense]  WAN: &lt;home-network&gt; / LAN: 192.168.1.1
     │
     ├── 192.168.1.0/24 (OKD VLAN)
-    │       │
-    │       ├── [services]  192.168.1.210   DNS(BIND) · HAProxy · Apache · NFS
-    │       ├── [bootstrap] 192.168.1.200   Fedora CoreOS  ← 安裝完即移除
-    │       ├── [master1]   192.168.1.201   Fedora CoreOS
-    │       ├── [master2]   192.168.1.202   Fedora CoreOS
-    │       ├── [master3]   192.168.1.203   Fedora CoreOS
-    │       ├── [worker1]   192.168.1.204   Fedora CoreOS
-    │       └── [worker2]   192.168.1.205   Fedora CoreOS
-    │
-pfSense DHCP → MAC 靜態對應 → 確保每台 VM 取得固定 IP</pre>
+    │       ├── [services]  192.168.1.210   DNS · HAProxy · Apache · NFS
+    │       ├── [bootstrap] 192.168.1.200   Fedora CoreOS
+    │       ├── [master1-3] 192.168.1.201-203
+    │       └── [worker1-2] 192.168.1.204-205
+pfSense DHCP → MAC 靜態對應 → 固定 IP</pre>
         </div>
       </section>
 
