@@ -1,1 +1,3 @@
 install-config-with-sshkey.yml
+node_modules/
+dist/
